@@ -1,0 +1,7 @@
+require:
+- rubocob-performance
+- rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 3.3.8
+  NewCops: enable
