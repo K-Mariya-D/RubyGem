@@ -1,6 +1,4 @@
 module NormalFormOfLambdaExpressions
-end
-
 
 class Variable
     attr_accessor :value, :parent, :next
@@ -54,6 +52,7 @@ class TermTree
     end
 
     def print
+        puts 'start print'
         current_node = @root
         queue = Queue.new
 
@@ -74,8 +73,6 @@ class TermTree
 
 end
 
-private :Parser
-
 class Parser
     attr_reader :input, :index, :current_node
 
@@ -87,13 +84,14 @@ class Parser
     end
 
     def to_first_node
+        puts "to_first_node"
         until current_node.parent == nil
             current_node = current_node.parent
         end
     end
 
     def parse_term
-
+        puts @index
         add_application
 
         #пропускаем незначащие скобки
@@ -117,7 +115,8 @@ class Parser
     
     def add_application
         # Поднимаемся вверх по дереву и вставляем App
-        if current_char == '(' && @input[@index - 1] == ')'
+        if @index > 0 && current_char == '(' && @input[@index - 1] == ')'
+            puts "add_aplicaton"
             until current_node.parent == nil || current_node.parent.is_a?(App)
                 current_node = current_node.parent
             end
@@ -134,27 +133,32 @@ class Parser
     end
 
     def parse_abstraction
+        puts "parse_abstraction"
         consume(['λ', 'l', 'L'])
         variable = parse_variable
         consume('.')
         body = parse_term
-        Abstraction.new(variable, current_node, body)
+        Lyambda.new(variable, current_node, body)
     end
     
     def parse_variable
+        puts "parse_variable"
         var_name = current_char
         consume(var_name)
         Variable.new(var_name, current_node)
     end
     
     def parse_application
+        puts "parse_application"
         function = parse_term
         argument = parse_term
         App.new(function, argument, current_node)
     end
     
     def change_node(next_node)
-        if current_node.is_a?(Lyambda) || current_node.is_a?(Variable)
+        if current_node == nil
+            current_node = next_node
+        elsif current_node.is_a?(Lyambda) || current_node.is_a?(Variable)
             current_node.next = next_node
             current_node = current_node.next
         else 
@@ -168,9 +172,9 @@ class Parser
     end
     
     def consume(expected_chars)
-        expected_chars.each do |char|
-            raise "Unexpected character: #{current_chars}" unless char == current_char
-        end
+        raise "Unexpected character: #{current_char}" unless expected_chars.include?(current_char)
         @index += 1
     end
+end
+
 end
